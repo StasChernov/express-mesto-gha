@@ -55,7 +55,7 @@ module.exports.updateUser = (req, res) => {
   const { name, about } = req.body;
   const owner = req.user._id;
 
-  User.findByIdAndUpdate(owner, { name, about }, { new: true })
+  User.findByIdAndUpdate(owner, { name, about }, { new: true, runValidators: true })
     .then((user) => res.send({
       _id: user._id,
       name: user.name,
@@ -68,7 +68,7 @@ module.exports.updateAvatar = (req, res) => {
   const { avatar } = req.body;
   const owner = req.user._id;
 
-  User.findByIdAndUpdate(owner, { avatar }, { new: true })
+  User.findByIdAndUpdate(owner, { avatar }, { new: true, runValidators: true })
     .then((user) => res.send({
       _id: user._id,
       avatar: user.avatar,
