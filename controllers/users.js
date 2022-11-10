@@ -42,16 +42,13 @@ module.exports.createUser = (req, res) => {
 module.exports.getUserById = (req, res) => {
   User.findById(req.params.userId)
     .then((user) => {
-      console.log(user);
       if (!user) {
-        throw new Error(404, `Not found`)
+        throw new Error(404, 'Not found');
       } else {
-        console.log(user);
         res.send({ data: user });
-
       }
     })
-    //.catch((err) => responseBadRequestError(res, err.message));
+    .catch((err) => responseBadRequestError(res, err.message));
 };
 
 module.exports.updateUser = (req, res) => {
