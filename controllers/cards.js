@@ -21,7 +21,11 @@ module.exports.getCards = (req, res) => {
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
-      res.send(card);
+      if (!card) {
+        res.status(404).send({ message: 'Карточка не найдена.' });
+      } else {
+        res.send(card);
+      }
     })
     .catch((err) => responseBadRequestError(res, err.message));
 };
@@ -58,7 +62,11 @@ module.exports.dislikeCard = (req, res) => {
     { new: true, runValidators: true },
   )
     .then((card) => {
-      res.send(card);
+      if (!card) {
+        res.status(404).send({ message: 'Карточка не найдена.' });
+      } else {
+        res.send(card);
+      }
     })
     .catch((err) => responseBadRequestError(res, err.message));
 };
