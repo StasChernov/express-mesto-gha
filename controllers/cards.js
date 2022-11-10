@@ -42,7 +42,11 @@ module.exports.likeCard = (req, res) => {
     { new: true },
   )
     .then((card) => {
-      res.send(card);
+      if (!card) {
+        res.status(404).send({ message: 'Карточка не найдена.' });
+      } else {
+        res.send(card);
+      }
     })
     .catch((err) => responseBadRequestError(res, err.message));
 };
