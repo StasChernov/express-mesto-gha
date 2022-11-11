@@ -1,21 +1,25 @@
+const constants = require('http2');
 const User = require('../models/user');
 
-const responseBadRequestError = (res, message) => res
-  .status(400)
-  .send({
-    message: `Некорректные данные для пользователя. ${message}`,
-  });
+const responseBadRequestError = (res) => res
+  .status(constants.HTTP_STATUS_BAD_REQUEST)
+  .send({ message: 'Некорректные данные для пользователя. ' });
 
-const responseServerError = (res, message) => res
-  .status(500)
-  .send({
-    message: `На сервере произошла ошибка. ${message}`,
-  });
+const responseServerError = (res) => res
+  .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+  .send({ message: 'На сервере произошла ошибка. ' });
+
+const responseNotFoundError = (res) => res
+  .status(constants.HTTP_STATUS_NOT_FOUND)
+  .send({ message: 'Пользователь не найден. ' });
 
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch((err) => responseServerError(res, err.message));
+    .catch((err) => {
+      if (err.name === 'CastError') responseBadRequestError(res);
+      else responseServerError(res);
+    });
 };
 
 module.exports.createUser = (req, res) => {
@@ -30,25 +34,26 @@ module.exports.createUser = (req, res) => {
     about,
     avatar,
   })
-    .then((user) => res.send({
-      _id: user._id,
-      name: user.name,
-      about: user.about,
-      avatar: user.avatar,
-    }))
-    .catch((err) => responseBadRequestError(res, err.message));
+    .then((user) => res.send(user))
+    .catch((err) => {
+      if (err.name === 'CastError') responseBadRequestError(res);
+      else responseServerError(res);
+    });
 };
 
 module.exports.getUserById = (req, res) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'Пользователь не найден.' });
+        responseNotFoundError(res);
       } else {
         res.send({ data: user });
       }
     })
-    .catch((err) => responseBadRequestError(res, err.message));
+    .catch((err) => {
+      if (err.name === 'CastError') responseBadRequestError(res);
+      else responseServerError(res);
+    });
 };
 
 module.exports.updateUser = (req, res) => {
@@ -56,12 +61,11 @@ module.exports.updateUser = (req, res) => {
   const owner = req.user._id;
 
   User.findByIdAndUpdate(owner, { name, about }, { new: true, runValidators: true })
-    .then((user) => res.send({
-      _id: user._id,
-      name: user.name,
-      about: user.about,
-    }))
-    .catch((err) => responseBadRequestError(res, err.message));
+    .then((user) => res.send(user))
+    .catch((err) => {
+      if (err.name === 'CastError') responseBadRequestError(res);
+      else responseServerError(res);
+    });
 };
 
 module.exports.updateAvatar = (req, res) => {
@@ -69,9 +73,9 @@ module.exports.updateAvatar = (req, res) => {
   const owner = req.user._id;
 
   User.findByIdAndUpdate(owner, { avatar }, { new: true, runValidators: true })
-    .then((user) => res.send({
-      _id: user._id,
-      avatar: user.avatar,
-    }))
-    .catch((err) => responseBadRequestError(res, err.message));
+    .then((user) => res.send(user))
+    .catch((err) => {
+      if (err.name === 'CastError') responseBadRequestError(res);
+      else responseServerError(res);
+    });
 };
