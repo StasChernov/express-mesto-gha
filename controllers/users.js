@@ -64,8 +64,16 @@ module.exports.updateUser = (req, res) => {
   const owner = req.user._id;
 
   User.findByIdAndUpdate(owner, { name, about }, { new: true, runValidators: true })
-    .then((user) => res.send(user))
+    .then((user) => {
+      if (!user) {
+        responseNotFoundError(res);
+      } else {
+        res.send({ data: user });
+      }
+    })
     .catch((err) => {
+      if (err.name === 'CastError') responseBadRequestError(res);
+      else
       if (err.name === 'ValidationError') responseValidationError(res);
       else responseServerError(res);
     });
@@ -76,8 +84,16 @@ module.exports.updateAvatar = (req, res) => {
   const owner = req.user._id;
 
   User.findByIdAndUpdate(owner, { avatar }, { new: true, runValidators: true })
-    .then((user) => res.send(user))
+    .then((user) => {
+      if (!user) {
+        responseNotFoundError(res);
+      } else {
+        res.send({ data: user });
+      }
+    })
     .catch((err) => {
+      if (err.name === 'CastError') responseBadRequestError(res);
+      else
       if (err.name === 'ValidationError') responseValidationError(res);
       else responseServerError(res);
     });

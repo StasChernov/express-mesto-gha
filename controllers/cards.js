@@ -45,7 +45,7 @@ module.exports.createCard = (req, res) => {
   const owner = req.user._id;
 
   Card.create({ name, link, owner })
-    .then((card) => res.send(card))
+    .then((card) => res.status(constants.HTTP_STATUS_CREATED).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') responseValidationError(res);
       else responseServerError(res);
@@ -58,6 +58,7 @@ module.exports.likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
+    .populate('likes')
     .then((card) => {
       if (!card) {
         responseNotFoundError(res);
@@ -77,6 +78,7 @@ module.exports.dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true, runValidators: true },
   )
+    .populate('likes')
     .then((card) => {
       if (!card) {
         responseNotFoundError(res);
