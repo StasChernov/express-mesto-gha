@@ -18,7 +18,7 @@ const responseNotFoundError = (res) => res
   .send({ message: 'Карточка не найдена. ' });
 
 module.exports.getCards = (req, res) => {
-  Card.find({}).populate('owner')
+  Card.find({}).populate(['owner', 'likes'])
     .then((cards) => res.send({ data: cards }))
     .catch(() => {
       responseServerError(res);
@@ -58,7 +58,7 @@ module.exports.likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .populate('likes')
+    .populate(['owner', 'likes'])
     .then((card) => {
       if (!card) {
         responseNotFoundError(res);
@@ -78,7 +78,7 @@ module.exports.dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true, runValidators: true },
   )
-    .populate('likes')
+    .populate(['owner', 'likes'])
     .then((card) => {
       if (!card) {
         responseNotFoundError(res);
