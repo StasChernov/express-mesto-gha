@@ -1,7 +1,11 @@
-const constants = require('http2');
+const { constants } = require('http2');
 const User = require('../models/user');
 
 const responseBadRequestError = (res) => res
+  .status(constants.HTTP_STATUS_BAD_REQUEST)
+  .send({ message: 'Некорректный запрос пользователя. ' });
+
+const responseValidationError = (res) => res
   .status(constants.HTTP_STATUS_BAD_REQUEST)
   .send({ message: 'Некорректные данные для пользователя. ' });
 
@@ -16,9 +20,8 @@ const responseNotFoundError = (res) => res
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch((err) => {
-      if (err.name === 'CastError') responseBadRequestError(res);
-      else responseServerError(res);
+    .catch(() => {
+      responseServerError(res);
     });
 };
 
@@ -36,7 +39,7 @@ module.exports.createUser = (req, res) => {
   })
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'CastError') responseBadRequestError(res);
+      if (err.name === 'ValidationError') responseValidationError(res);
       else responseServerError(res);
     });
 };
@@ -63,7 +66,7 @@ module.exports.updateUser = (req, res) => {
   User.findByIdAndUpdate(owner, { name, about }, { new: true, runValidators: true })
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'CastError') responseBadRequestError(res);
+      if (err.name === 'ValidationError') responseValidationError(res);
       else responseServerError(res);
     });
 };
@@ -75,7 +78,7 @@ module.exports.updateAvatar = (req, res) => {
   User.findByIdAndUpdate(owner, { avatar }, { new: true, runValidators: true })
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'CastError') responseBadRequestError(res);
+      if (err.name === 'ValidationError') responseValidationError(res);
       else responseServerError(res);
     });
 };

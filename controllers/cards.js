@@ -1,24 +1,27 @@
-const constants = require('http2');
+const { constants } = require('http2');
 const Card = require('../models/card');
 
 const responseBadRequestError = (res) => res
   .status(constants.HTTP_STATUS_BAD_REQUEST)
-  .send({ message: 'Некорректные данные для карточки. ' });
+  .send({ message: 'Некорректный запрос карточки. ' });
 
 const responseServerError = (res) => res
   .status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
   .send({ message: 'На сервере произошла ошибка. ' });
+
+const responseValidationError = (res) => res
+  .status(constants.HTTP_STATUS_BAD_REQUEST)
+  .send({ message: 'Некорректные данные для карточки. ' });
 
 const responseNotFoundError = (res) => res
   .status(constants.HTTP_STATUS_NOT_FOUND)
   .send({ message: 'Карточка не найдена. ' });
 
 module.exports.getCards = (req, res) => {
-  Card.find({})
+  Card.find({}).populate('owner')
     .then((cards) => res.send({ data: cards }))
-    .catch((err) => {
-      if (err.name === 'CastError') responseBadRequestError(res);
-      else responseServerError(res);
+    .catch(() => {
+      responseServerError(res);
     });
 };
 
@@ -44,7 +47,7 @@ module.exports.createCard = (req, res) => {
   Card.create({ name, link, owner })
     .then((card) => res.send(card))
     .catch((err) => {
-      if (err.name === 'CastError') responseBadRequestError(res);
+      if (err.name === 'ValidationError') responseValidationError(res);
       else responseServerError(res);
     });
 };
