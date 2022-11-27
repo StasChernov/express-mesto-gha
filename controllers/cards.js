@@ -2,6 +2,7 @@ const { constants } = require('http2');
 const Card = require('../models/card');
 const NotFoundError = require('../errors/not-found-err');
 const BadRequestError = require('../errors/bad-request-err');
+const ForbiddenError = require('../errors/forbidden-err');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({}).populate(['owner', 'likes'])
@@ -13,8 +14,11 @@ module.exports.deleteCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
       if (!card) {
-        throw new NotFoundError('Карточка не найдена');
+        next(new NotFoundError('Карточка не найдена'));
+      } else if (card.owner.toString() !== req.user._id) {
+        next(new ForbiddenError('Запрещено'));
       } else {
+        card.remove();
         res.send(card);
       }
     })
