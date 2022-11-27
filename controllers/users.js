@@ -29,7 +29,11 @@ module.exports.createUser = (req, res, next) => {
       email,
       password: hash,
     }))
-    .then((user) => res.status(constants.HTTP_STATUS_CREATED).send(user))
+    .then((document) => {
+      const user = document.toObject();
+      delete user.password;
+      res.status(constants.HTTP_STATUS_CREATED).send(user);
+    })
     .catch((err) => {
       if (err.code === 11000) {
         next(new ConflictError('Пользователь с таким email уже существует'));
